@@ -1,4 +1,4 @@
-package io.github.axst
+package io.github.sdxqw.sapphire
 
 class ClientCore {
 

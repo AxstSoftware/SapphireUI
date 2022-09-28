@@ -1,6 +1,6 @@
-package io.github.axst.mixins;
+package io.github.sdxqw.sapphire.mixins;
 
-import io.github.axst.ClientCore;
+import io.github.sdxqw.sapphire.ClientCore;
 import net.minecraft.client.Minecraft;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
