@@ -19,3 +19,9 @@ soon
 * Fork this repository
 * Do your stuff in your forked repository
 * Create a pull request here
+
+---
+<h6 align="center">
+  | GitHub - <a href="https://github.com/Hobbyshop">@hobbyshop</a> 
+  |
+</h6>
