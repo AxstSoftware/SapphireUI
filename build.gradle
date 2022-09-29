@@ -67,6 +67,8 @@ dependencies {
 	}
 	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version")
 	annotationProcessor("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version")
+
+	implementation('com.github.Vatuu:discord-rpc:1.6.2')
 }
 
 processResources {
