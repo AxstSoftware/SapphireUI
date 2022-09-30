@@ -1,5 +1,5 @@
 buildscript {
-	ext.kotlin_version = '1.7.10'
+	ext.kotlin_version = '1.7.20'
 	repositories {
 		mavenCentral()
 		maven { url 'https://files.minecraftforge.net/maven' }
@@ -25,7 +25,7 @@ compileJava {
 	sourceCompatibility = targetCompatibility = 8
 }
 
-version '1.8.9'
+version '1.8.9-0.1'
 group 'io.github.sdxqw.sapphire'
 
 minecraft {
@@ -67,7 +67,8 @@ dependencies {
 	}
 	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version")
 	annotationProcessor("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version")
-
+	implementation('org.reflections:reflections:0.10.2')
+	annotationProcessor('org.reflections:reflections:0.10.2')
 	implementation('com.github.Vatuu:discord-rpc:1.6.2')
 }
 
