@@ -1,117 +1,60 @@
-buildscript {
-	ext.kotlin_version = '1.7.20'
-	repositories {
-		mavenCentral()
-		maven { url 'https://files.minecraftforge.net/maven' }
-		maven { url 'https://repo.spongepowered.org/maven' }
-		maven { url 'https://jitpack.io' }
-	}
-	dependencies {
-		classpath 'com.github.sdxqw:ForgeGradle:f2c5bb338e'
-		classpath 'com.github.sdxqw:MixinGradle:0.6-SNAPSHOT'
-		classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-	}
+import org.gradle.internal.os.OperatingSystem
+
+plugins {
+	id 'org.jetbrains.kotlin.jvm' version '1.7.20'
+	id 'java'
+	id 'maven-publish'
 }
 
-apply plugin: 'net.minecraftforge.gradle.tweaker-client'
-apply plugin: 'org.jetbrains.kotlin.jvm'
-apply plugin: 'org.spongepowered.mixin'
-apply plugin: 'java'
+version '1.0'
+group 'io.github.sdxqw.sapphireui'
 
-String tweakerClass = 'io.github.sdxqw.sapphire.launch.LaunchTweaker'
-String tweaker = 'sapphire'
-
-compileJava {
-	sourceCompatibility = targetCompatibility = 8
-}
-
-version '1.8.9-0.1'
-group 'io.github.sdxqw.sapphire'
-
-minecraft {
-	version = '1.8.9'
-	tweakClass = "${tweakerClass}"
-	mappings = 'stable_22'
-	runDir = 'run'
-	clientJvmArgs = ['-Dmixin.debug=true', '-XX:-DisableExplicitGC', '-Xmx1G', '-DFORGE_FORCE_FRAME_RECALC=true']
-	makeObfSourceJar = false
-}
-
-mixin {
-	defaultObfuscationEnv notch
-	add sourceSets.main, "mixins.${tweaker}.refmap.json"
+project.ext.lwjglVersion = "3.3.1"
+switch (OperatingSystem.current()) {
+	case OperatingSystem.LINUX:
+		def osArch = System.getProperty("os.arch")
+		project.ext.lwjglNatives = osArch.startsWith("arm") || osArch.startsWith("aarch64") ? "natives-linux-${osArch.contains("64") || osArch.startsWith("armv8") ? "arm64" : "arm32"}" : "natives-linux"
+		break
+	case OperatingSystem.MAC_OS:
+		project.ext.lwjglNatives = System.getProperty("os.arch").startsWith("aarch64") ? "natives-macos-arm64" : "natives-macos"
+		break
+	case OperatingSystem.WINDOWS:
+		def osArch = System.getProperty("os.arch")
+		project.ext.lwjglNatives = osArch.contains("64") ? "natives-windows${osArch.startsWith("aarch64") ? "-arm64" : ""}" : "natives-windows-x86"
+		break
 }
 
 repositories {
 	mavenCentral()
-	maven { url 'https://libraries.minecraft.net' }
-	maven { url 'https://repo.spongepowered.org/maven' }
-	maven { url 'https://jitpack.io' }
-}
-
-configurations {
-	tclmdk
-	implementation.extendsFrom tclmdk
-	runtime.extendsFrom tclmdk
-	compile {
-		canBeResolved = true
-	}
 }
 
 dependencies {
-	tclmdk('org.spongepowered:mixin:0.7.11-SNAPSHOT') {
-		exclude module: 'launchwrapper'
-		exclude module: 'guava'
-		exclude module: 'gson'
-		exclude module: 'commons-io'
-	}
-	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version")
-	annotationProcessor("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version")
-	implementation('org.reflections:reflections:0.10.2')
-	annotationProcessor('org.reflections:reflections:0.10.2')
-	implementation('com.github.Vatuu:discord-rpc:1.6.2')
+	implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.7.20'
+	implementation 'org.jetbrains.kotlin:kotlin-reflect:1.7.20'
+	implementation 'commons-io:commons-io:2.11.0'
+
+	testImplementation 'org.apache.commons:commons-collections4:4.4'
+
+	testImplementation "org.lwjgl:lwjgl:$lwjglVersion"
+	testImplementation "org.lwjgl:lwjgl-glfw:$lwjglVersion"
+	testImplementation "org.lwjgl:lwjgl-nanovg:$lwjglVersion"
+	testImplementation "org.lwjgl:lwjgl-opengl:$lwjglVersion"
+	testImplementation "org.lwjgl:lwjgl-stb:$lwjglVersion"
+	testRuntimeOnly "org.lwjgl:lwjgl:$lwjglVersion:$lwjglNatives"
+	testRuntimeOnly "org.lwjgl:lwjgl-glfw:$lwjglVersion:$lwjglNatives"
+	testRuntimeOnly "org.lwjgl:lwjgl-nanovg:$lwjglVersion:$lwjglNatives"
+	testRuntimeOnly "org.lwjgl:lwjgl-opengl:$lwjglVersion:$lwjglNatives"
+	testRuntimeOnly "org.lwjgl:lwjgl-stb:$lwjglVersion:$lwjglNatives"
 }
 
-processResources {
-	inputs.files 'src/main/resources'
-	outputs.dir 'build/classes/main'
-	copy {
-		from('src/main/resources')
-		into('build/classes/main')
-	}
-}
-
-jar {
-	dependsOn configurations.compile
-	from {
-		configurations.tclmdk.collect {
-			it.isDirectory() ? it : zipTree(it)
+publishing {
+	publications {
+		maven(MavenPublication) {
+			groupId = 'io.github.sdxqw'
+			artifactId = 'SapphireUI'
+			version = '1.0'
+			from components.kotlin
 		}
-	}
-	exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA', 'LICENSE.txt', 'dummyThing'
-}
-
-jar {
-	manifest.attributes(
-			'MixinConfigs': "mixins.${tweaker}.json",
-			'TweakClass': "${tweakerClass}",
-			'TweakOrder': 0,
-			'Manifest-Version': 1.0
-	)
-
-	from {
-		configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-	}
-
-	configurations.tclmdk.each { dep ->
-		from(project.zipTree(dep)) {
-			exclude 'META-INF', 'META-INF/**'
-		}
-	}
-}
-compileKotlin {
-	kotlinOptions {
-		jvmTarget = "1.8"
 	}
 }
 
